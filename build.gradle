@@ -1,3 +1,9 @@
+import groovy.json.JsonBuilder
+import org.w3c.dom.Document
+import org.w3c.dom.Element
+
+import javax.xml.parsers.DocumentBuilderFactory
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.4'
@@ -38,4 +44,93 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    reports {
+        junitXml.outputPerTestCase = true
+    }
+    finalizedBy('convertXmlToJson')
+}
+
+
+tasks.register('convertXmlToJson') {
+    description = 'Converts JUnit XML test reports to JSON format'
+
+    doLast {
+        def xmlReportsDir = file("${rootDir}/build/test-results/test")
+        def jsonReportFile = file("./test-results.json")
+
+        if (!xmlReportsDir.exists()) {
+            println "No XML test reports found to convert."
+            return
+        }
+
+        if (jsonReportFile.exists()) {
+            jsonReportFile.delete()
+            println "Deleted existing JSON test report file: ${jsonReportFile}"
+        }
+
+        def jsonOutput = new JsonBuilder()
+        def testResults = []
+
+        // Track summary data
+        def testCount = 0
+        def skippedCount = 0
+        def failedCount = 0
+        def totalTime = 0.0
+
+        // Use Java's DocumentBuilderFactory to parse XML files
+        def factory = DocumentBuilderFactory.newInstance()
+        def builder = factory.newDocumentBuilder()
+        def tests = []
+
+        xmlReportsDir.eachFileRecurse { File file ->
+            if (file.name.endsWith('.xml')) {
+                Document document = builder.parse(file)
+                Element testSuite = document.documentElement
+
+                def testCaseNodes = testSuite.getElementsByTagName("testcase")
+                for (int i = 0; i < testCaseNodes.getLength(); i++) {
+                    def testCase = testCaseNodes.item(i)
+
+                    def result = [:]
+                    result.name = testCase.getAttribute("name")
+                    result.className = testCase.getAttribute("classname")
+                    result.time = testCase.getAttribute("time").toDouble()
+
+                    testCount++  // Increment the total test count
+                    totalTime += result.time  // Accumulate total time
+
+                    def failureNodes = testCase.getElementsByTagName("failure")
+                    if (failureNodes.getLength() > 0) {
+                        result.status = 'FAILED'
+                        result.message = failureNodes.item(0).getAttribute("message")
+                        failedCount++  // Increment the failed test count
+                    } else if (testCase.getElementsByTagName("skipped").getLength() > 0) {
+                        result.status = 'SKIPPED'
+                        skippedCount++  // Increment the skipped test count
+                    } else {
+                        result.status = 'SUCCESS'
+                    }
+
+                    tests << result
+                }
+            }
+        }
+
+        // Add summary to the JSON output
+        def summary = [
+                tests: testCount,
+                skipped: skippedCount,
+                failures: failedCount,
+                "total time": totalTime
+        ]
+
+        jsonOutput([
+                summary: summary,
+                tests: tests
+        ])
+
+        // Write JSON result to file
+        jsonReportFile.text = jsonOutput.toPrettyString()
+        println "JSON test report generated: ${jsonReportFile}"
+    }
 }
