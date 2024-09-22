@@ -37,4 +37,4 @@ out/
 .vscode/
 
 ### test-results ###
-./test-results.json
+/test-results.json

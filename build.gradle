@@ -69,7 +69,6 @@ tasks.register('convertXmlToJson') {
         }
 
         def jsonOutput = new JsonBuilder()
-        def testResults = []
 
         // Track summary data
         def testCount = 0
