@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<configuration>
+  <property name="LOGS" value="../../logs" />
+  <logger name="org.springframework" level="INFO" />
+
+  <appender class="ch.qos.logback.core.ConsoleAppender" name="CONSOLE">
+    <encoder>
+      <pattern>
+        <![CDATA[[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%X{traceId}] %highlight(%-5level)[%green(%thread)] %yellow(%logger{35}) [%method{24}:%line] - %msg%n]]>
+      </pattern>
+    </encoder>
+  </appender>
+
+  <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOGS}/spring-boot-logger.log</file>
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <Pattern>
+        <![CDATA[[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%X{traceId}] %highlight(%-5level)[%green(%thread)] %yellow(%logger{35}) [%method{24}:%line] - %msg%n]]>
+      </Pattern>
+    </encoder>
+
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- rollover daily and when the file reaches 10 MegaBytes -->
+      <fileNamePattern>${LOGS}/archived/spring-boot-logger-%d{yyyy-MM-dd}.%i.log
+      </fileNamePattern>
+      <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFileNamingAndTriggeringPolicy">
+        <maxFileSize>10MB</maxFileSize>
+      </timeBasedFileNamingAndTriggeringPolicy>
+    </rollingPolicy>
+  </appender>
+
+  <appender name="ConfigRollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOGS}/spring-boot-config-logger.log</file>
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <Pattern>
+        <![CDATA[[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%X{traceId}] %highlight(%-5level)[%green(%thread)] %yellow(%logger{35}) [%method{24}:%line] - %msg%n]]>
+      </Pattern>
+    </encoder>
+
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- rollover daily and when the file reaches 10 MegaBytes -->
+      <fileNamePattern>${LOGS}/archived/spring-boot-config-logger-%d{yyyy-MM-dd}.%i.log
+      </fileNamePattern>
+      <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFileNamingAndTriggeringPolicy">
+        <maxFileSize>10MB</maxFileSize>
+      </timeBasedFileNamingAndTriggeringPolicy>
+    </rollingPolicy>
+  </appender>
+
+  <root level="error">
+    <appender-ref ref="RollingFile" />
+    <appender-ref ref="CONSOLE"/>
+
+  </root>
+  <logger name="com.ocean" level="error" additivity="false">
+    <appender-ref ref="RollingFile" />
+    <appender-ref ref="CONSOLE"/>
+  </logger>
+
+  <logger name="com.ocean.scdemo.config" level="debug" additivity="false">
+    <appender-ref ref="ConfigRollingFile" />
+    <appender-ref ref="CONSOLE"/>
+  </logger>
+</configuration>
