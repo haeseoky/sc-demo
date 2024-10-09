@@ -3,7 +3,6 @@ package com.ocean.scdemo.sample.infrastructure;
 import com.ocean.scdemo.config.circuitbreaker.LocalCircuitBreaker;
 import com.ocean.scdemo.sample.infrastructure.model.response.SampleResponse;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
-import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -24,13 +23,13 @@ public class LocalTestWebClient {
         this.localCircuitBreaker = localCircuitBreaker;
     }
 
-    public SampleResponse getSample() {
-        return execute(localCircuitBreaker, this::getSampleResponse, this::fallback);
+    public SampleResponse getSample(String str) {
+        return execute(localCircuitBreaker, () -> getSampleResponse(str), this::fallback);
     }
 
-    private SampleResponse getSampleResponse() {
+    private SampleResponse getSampleResponse(String param) {
         return localWebClient.get()
-            .uri("/api/sample")
+            .uri(param)
             .retrieve()
             .bodyToMono(SampleResponse.class)
             .block();

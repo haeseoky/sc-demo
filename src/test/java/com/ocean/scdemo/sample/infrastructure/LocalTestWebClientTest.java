@@ -29,7 +29,7 @@ class LocalTestWebClientTest {
             MDC.put("traceId", countStr+": "+UUID.randomUUID().toString());
 
             Thread.sleep(500);
-            SampleResponse sample = localTestWebClient.getSample();
+            SampleResponse sample = localTestWebClient.getSample("/api/sample");
             log.info("[CircuitBreaker] sample: {}", sample);
             assertNotNull(sample);
         }
