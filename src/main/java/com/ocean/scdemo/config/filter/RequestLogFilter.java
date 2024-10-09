@@ -30,6 +30,7 @@ public class RequestLogFilter extends OncePerRequestFilter {
         var startTime = System.currentTimeMillis();
 
         MDC.put("requestId", contentCachingRequestWrapper.getHeader("requestId"));
+        MDC.put("traceId", requestId);
         filterChain.doFilter(request, response);
 
         var takeTime = System.currentTimeMillis() - startTime;
