@@ -40,6 +40,13 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+
+    // https://mvnrepository.com/artifact/org.springframework/spring-webflux
+    implementation 'org.springframework:spring-webflux:6.1.13'
+
+    // https://mvnrepository.com/artifact/io.github.resilience4j/resilience4j-circuitbreaker
+    implementation 'io.github.resilience4j:resilience4j-circuitbreaker:2.2.0'
+
 }
 
 tasks.named('test') {

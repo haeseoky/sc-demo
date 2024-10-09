@@ -1,4 +1,4 @@
-package com.ocean.scdemo.sample.infrastructure.entity;
+package com.ocean.scdemo.sample.infrastructure.model.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

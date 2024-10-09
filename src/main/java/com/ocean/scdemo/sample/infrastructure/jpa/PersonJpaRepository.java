@@ -1,7 +1,6 @@
 package com.ocean.scdemo.sample.infrastructure.jpa;
 
-import com.ocean.scdemo.sample.domain.Person;
-import com.ocean.scdemo.sample.infrastructure.entity.PersonEntity;
+import com.ocean.scdemo.sample.infrastructure.model.entity.PersonEntity;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

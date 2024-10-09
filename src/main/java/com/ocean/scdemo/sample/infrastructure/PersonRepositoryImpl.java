@@ -2,7 +2,7 @@ package com.ocean.scdemo.sample.infrastructure;
 
 import com.ocean.scdemo.sample.domain.Person;
 import com.ocean.scdemo.sample.domain.repository.PersonRepository;
-import com.ocean.scdemo.sample.infrastructure.entity.PersonEntity;
+import com.ocean.scdemo.sample.infrastructure.model.entity.PersonEntity;
 import com.ocean.scdemo.sample.infrastructure.jpa.PersonJpaRepository;
 import java.util.List;
 import org.springframework.stereotype.Repository;

@@ -1,4 +1,4 @@
-package com.ocean.scdemo.sample.infrastructure.entity;
+package com.ocean.scdemo.sample.infrastructure.model.entity;
 
 import com.ocean.scdemo.sample.domain.Gender;
 import jakarta.persistence.AttributeConverter;

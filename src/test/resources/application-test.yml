@@ -48,20 +48,3 @@ springdoc:
 webclient:
   local:
     base-url: http://localhost:9090
----
-spring:
-  config:
-    activate:
-      on-profile: dev
-
----
-spring:
-  config:
-    activate:
-      on-profile: stage
-
----
-spring:
-  config:
-    activate:
-      on-profile: prod
