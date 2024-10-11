@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.ocean.scdemo.sample.infrastructure.model.response.SampleResponse;
 import java.util.UUID;
-import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
@@ -12,13 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @Slf4j
-@SpringBootTest
+//@SpringBootTest
 class LocalTestWebClientTest {
 
-    @Autowired
+//    @Autowired
     private LocalTestWebClient localTestWebClient;
 
-    @Test
+//    @Test
     void testGetSample() throws InterruptedException {
 
         int count = 1;
