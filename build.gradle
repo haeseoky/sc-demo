@@ -47,6 +47,9 @@ dependencies {
     // https://mvnrepository.com/artifact/io.github.resilience4j/resilience4j-circuitbreaker
     implementation 'io.github.resilience4j:resilience4j-circuitbreaker:2.2.0'
 
+    // https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
+
 }
 
 tasks.named('test') {

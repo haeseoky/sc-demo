@@ -4,8 +4,6 @@ server:
 spring:
   application:
     name: sc-demo
-  profiles:
-    active: local
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://localhost:3306/sc-demo
