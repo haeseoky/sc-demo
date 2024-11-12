@@ -25,6 +25,9 @@ spring:
         default_batch_fetch_size: 500
         format_sql: true
     show-sql: true
+  threads:
+    virtual:
+      enabled: true
 springdoc:
   packages-to-scan: com.example.javaboilerplate
   swagger-ui:

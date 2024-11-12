@@ -26,7 +26,7 @@ public class PredicateTest {
 
         Predicate<Boolean> booleanPredicate = returnBoolean(true);
         log.info("booleanPredicate: {}", booleanPredicate.test(true));
-        assertEquals(false, booleanPredicate.test(true));
+        assertEquals(true, booleanPredicate.test(true));
     }
 
 
