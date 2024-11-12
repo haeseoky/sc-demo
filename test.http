@@ -1,2 +1,33 @@
 ###
 GET http://localhost:ª·(ª8080/api/person/v1/sample
+
+
+
+###
+PUT /_security/api_key
+
+{
+"name": "my-api-key",
+  "role_descriptors": {
+    "superuser": {	# 역할 명
+      "cluster": [	# 적용할 클러스터
+        "all"
+      ],
+      "indices": [	# 적용할 인덱스
+        {
+          "names": [
+            "person"
+          ],
+          "privileges": [	# 적용할 권한
+            "all"
+          ],
+          "allow_restricted_indices": false
+        }
+      ],
+      "run_as": [
+        "*"
+      ]
+    }
+  }
+}
+
