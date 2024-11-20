@@ -31,3 +31,9 @@ PUT /_security/api_key
   }
 }
 
+### final
+POST http://localhost:8080/final/test
+Content-Type: application/json
+
+{
+}
