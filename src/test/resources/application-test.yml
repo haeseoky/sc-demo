@@ -28,6 +28,10 @@ spring:
   threads:
     virtual:
       enabled: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
 springdoc:
   packages-to-scan: com.example.javaboilerplate
   swagger-ui:

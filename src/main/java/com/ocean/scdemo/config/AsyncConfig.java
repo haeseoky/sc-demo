@@ -24,9 +24,9 @@ public class AsyncConfig {
     public Executor normalTaskExecutor() {
 
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(2);
-        executor.setQueueCapacity(1000);
+        executor.setCorePoolSize(3);
+        executor.setMaxPoolSize(3);
+        executor.setQueueCapacity(2000);
         executor.setThreadNamePrefix("normal-thread-");
 //        executor.initialize();
         return executor;
