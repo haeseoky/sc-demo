@@ -51,7 +51,7 @@
     </rollingPolicy>
   </appender>
 
-  <root level="off">
+  <root level="debug">
     <appender-ref ref="RollingFile" />
     <appender-ref ref="CONSOLE"/>
 

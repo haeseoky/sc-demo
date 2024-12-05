@@ -37,3 +37,14 @@ Content-Type: application/json
 
 {
 }
+
+
+
+### saveByJdbcTemplate
+POST http://localhost:8080/parallel/saveByJdbcTemplate
+Content-Type: application/json
+
+{"count": 10000000}
+
+### deleteByJdbcTemplate
+DELETE http://localhost:8080/parallel/deleteByJdbcTemplate

@@ -15,9 +15,12 @@ spring:
     password: yun1206
     hikari:
       connection-test-query: "select 1"
-      validation-timeout: 2000
+      validation-timeout: 30000
       auto-commit: false
       maximum-pool-size: 10
+      idle-timeout: 30000
+      connection-timeout: 30000
+      max-lifetime: 60000
   jpa:
     generate-ddl: false
     open-in-view: false
@@ -28,6 +31,8 @@ spring:
 #        dialect: org.hibernate.dialect.MariaDBDialect
         default_batch_fetch_size: 500
         format_sql: true
+#        bytecode:
+#          use_reflection_optimizer: false
     show-sql: true
   data:
     redis:

@@ -22,28 +22,49 @@ import java.time.LocalDate;
         @Index(name = "idx_person_name", columnList = "name")
     }
 )
-public record PersonEntity(
+public class PersonEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id,
+    private final Long id;
 
     @Column(name = "name", nullable = false)
-    String name,
+    private final String name;
     @Column(name = "identity", nullable = false)
-    String identity,
+    private final String identity;
     @Column(name = "birth", nullable = false)
-    LocalDate birth,
+    private final LocalDate birth;
     @Column(name = "address", nullable = false, length = 1000)
-    String address,
+    private final String address;
     @Column(name = "email", nullable = false)
-    String email,
+    private final String email;
     @Column(name = "phone", nullable = false, length = 20)
-    String phone,
+    private final String phone;
 
     @Column(name = "gender", nullable = false)
     @Convert(converter = GenderConverter.class)
-    Gender gender
-) {
+    private final Gender gender;
+
+    public PersonEntity() {
+        this.id = 0L;
+        this.name = "name";
+        this.identity = "identity";
+        this.birth = LocalDate.now();
+        this.address = "address";
+        this.email = "email";
+        this.phone = "phone";
+        this.gender = Gender.MAN;
+    }
+
+    private PersonEntity(Long id, String name, String identity, LocalDate birth, String address, String email, String phone, Gender gender) {
+        this.id = id;
+        this.name = name;
+        this.identity = identity;
+        this.birth = birth;
+        this.address = address;
+        this.email = email;
+        this.phone = phone;
+        this.gender = gender;
+    }
 
     public Person toDomain() {
         return new Person(
