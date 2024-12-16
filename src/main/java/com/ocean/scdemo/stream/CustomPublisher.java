@@ -10,7 +10,7 @@ import org.reactivestreams.Subscription;
 @Slf4j
 public class CustomPublisher implements Publisher<Integer> {
 
-    Iterator<Integer> iterator = IntStream.range(0, 10).iterator();
+    Iterator<Integer> iterator = IntStream.range(0, 20).iterator();
 
     @Override
     public void subscribe(Subscriber<? super Integer> subscriber) {

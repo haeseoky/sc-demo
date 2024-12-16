@@ -8,20 +8,27 @@ import org.reactivestreams.Subscription;
 public class CustomSubstriber implements Subscriber<Integer> {
     private Subscription subscription;
     int count = 0;
+    long requestCount = 5;
 
     @Override
     public void onSubscribe(Subscription subscription) {
         log.info("Subscribed");
         this.subscription = subscription;
-        this.subscription.request(3L);
+        this.subscription.request(requestCount);
     }
 
     @Override
     public void onNext(Integer integer) {
-        System.out.println("Received: " + integer);
+        log.info("Received: {}, count: {}", integer, count);
 
-        if (++count % 3 == 0) {
-            this.subscription.request(3L);
+
+        if (++count % requestCount == 0) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            this.subscription.request(requestCount);
         }
 
     }
