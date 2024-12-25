@@ -48,3 +48,7 @@ Content-Type: application/json
 
 ### deleteByJdbcTemplate
 DELETE http://localhost:8080/parallel/deleteByJdbcTemplate
+
+
+### type
+GET http://localhost:8080/type/parent
