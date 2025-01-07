@@ -13,12 +13,12 @@ public class ScDemoApplication {
     public static void main(String[] args) {
         ApplicationContext context = SpringApplication.run(ScDemoApplication.class, args);
 
-        // show all beans
-        String[] beans = context.getBeanDefinitionNames();
-        Arrays.sort(beans);
-        int index = 1;
-        for (String bean : beans) {
-            log.info("{}. {}", String.format("%010d", index++), bean);
-        }
+//        // show all beans
+//        String[] beans = context.getBeanDefinitionNames();
+//        Arrays.sort(beans);
+//        int index = 1;
+//        for (String bean : beans) {
+//            log.info("{}. {}", String.format("%010d", index++), bean);
+//        }
     }
 }
