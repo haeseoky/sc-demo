@@ -46,7 +46,12 @@ spring:
       host: localhost
       port: 27017
       database: sc-demo
-
+  thymeleaf:
+    cache: false
+    mode: HTML
+    prefix: classpath:/templates/
+    check-template-location: true
+    suffix: .html
 
 springdoc:
   packages-to-scan: com.example.javaboilerplate

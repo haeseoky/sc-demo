@@ -31,6 +31,11 @@ public class RequestLogFilter extends OncePerRequestFilter {
 
         MDC.put("requestId", contentCachingRequestWrapper.getHeader("requestId"));
         MDC.put("traceId", requestId);
+//        response.getWriter().write(12);
+//        response.getWriter().flush();
+
+//        contentCachingResponseWrapper.getWriter().write(0);
+//        if(true) throw new RuntimeException();
 
         filterChain.doFilter(request, response);
 

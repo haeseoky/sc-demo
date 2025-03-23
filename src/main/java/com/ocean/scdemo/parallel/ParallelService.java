@@ -23,7 +23,7 @@ public class ParallelService {
 
     private final TestDataRepository testDataRepository;
     private final TestRdbDataJpaRepository testRdbDataJpaRepository;
-    private final Executor normalTaskExecutor;
+    // private final Executor normalTaskExecutor;
 
     private final JdbcTemplate jdbcTemplate;
 
