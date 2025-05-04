@@ -38,3 +38,30 @@ out/
 
 ### test-results ###
 /test-results.json
+
+### Java ###
+*.class
+*.log
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+replay_pid*
+
+### Sensitive data & application properties ###
+src/main/resources/application-dev.yml
+src/main/resources/application-stage.yml
+src/main/resources/application-prod.yml
+src/main/resources/application-local.yml
+.env
+
+### Memory dump files ###
+*.hprof
+
+### Logs ###
+logs/
+*.log

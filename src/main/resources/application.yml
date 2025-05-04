@@ -11,8 +11,8 @@ spring:
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://localhost:3306/sc-demo
-    username: root
-    password: yun1206
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
     hikari:
       connection-test-query: "select 1"
       validation-timeout: 30000
@@ -23,8 +23,8 @@ spring:
       max-lifetime: 60000
 #  r2dbc:
 #    url: r2dbc:mariadb://localhost:3306/sc-demo
-#    username: root
-#    password: yun1206
+#    username: ${DB_USERNAME:root}
+#    password: ${DB_PASSWORD:}
   jpa:
     generate-ddl: false
     open-in-view: false
@@ -40,12 +40,12 @@ spring:
     show-sql: true
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
     mongodb:
-      host: localhost
-      port: 27017
-      database: sc-demo
+      host: ${MONGODB_HOST:localhost}
+      port: ${MONGODB_PORT:27017}
+      database: ${MONGODB_DATABASE:sc-demo}
   thymeleaf:
     cache: false
     mode: HTML
@@ -73,7 +73,7 @@ springdoc:
 
 webclient:
   local:
-    base-url: http://localhost:8080
+    base-url: ${LOCAL_BASE_URL:http://localhost:8080}
 ---
 spring:
   config:
