@@ -11,8 +11,8 @@ spring:
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://localhost:3306/sc-demo
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:}
+    username: ${DB_USERNAME:admin}
+    password: ${DB_PASSWORD:admin0.1!}
     hikari:
       connection-test-query: "select 1"
       validation-timeout: 30000
