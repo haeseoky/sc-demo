@@ -1,0 +1,220 @@
+{
+    "root_group": {
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {
+            "setup": {
+                "checks": {
+                    "warmup API status is 200": {
+                        "name": "warmup API status is 200",
+                        "path": "::setup::warmup API status is 200",
+                        "id": "47032173595879a0141f1cdcc7d9ad2b",
+                        "passes": 0,
+                        "fails": 1
+                    }
+                },
+                "name": "setup",
+                "path": "::setup",
+                "id": "5c0f8025f7e0b6654089e5b00e950f1a",
+                "groups": {}
+            }
+        },
+        "checks": {
+            "hotdata API status is 200": {
+                "passes": 0,
+                "fails": 15,
+                "name": "hotdata API status is 200",
+                "path": "::hotdata API status is 200",
+                "id": "1238f96469790e8b52c859673c1f4fd4"
+            },
+            "hotdata API response time < 100ms": {
+                "name": "hotdata API response time < 100ms",
+                "path": "::hotdata API response time < 100ms",
+                "id": "b20bfafa16b1e9de8a0b80e106a17047",
+                "passes": 15,
+                "fails": 0
+            },
+            "product API status is 200": {
+                "name": "product API status is 200",
+                "path": "::product API status is 200",
+                "id": "10c4ab2a71ec5ed836a8f264903e8e8d",
+                "passes": 0,
+                "fails": 11
+            },
+            "product API response time < 500ms": {
+                "name": "product API response time < 500ms",
+                "path": "::product API response time < 500ms",
+                "id": "83a40b935a06ef41438b7a18ccfd9f89",
+                "passes": 11,
+                "fails": 0
+            },
+            "user API status is 200": {
+                "name": "user API status is 200",
+                "path": "::user API status is 200",
+                "id": "d4c0eb9334609f59121604934f7b41b8",
+                "passes": 0,
+                "fails": 40
+            },
+            "user API response time < 500ms": {
+                "path": "::user API response time < 500ms",
+                "id": "388c28c1e69671eef44d978c88cbf99d",
+                "passes": 40,
+                "fails": 0,
+                "name": "user API response time < 500ms"
+            },
+            "batch API status is 200": {
+                "name": "batch API status is 200",
+                "path": "::batch API status is 200",
+                "id": "6d630f488ac0936fe57d8c26ef122734",
+                "passes": 0,
+                "fails": 1
+            },
+            "batch API response time < 1000ms": {
+                "name": "batch API response time < 1000ms",
+                "path": "::batch API response time < 1000ms",
+                "id": "18263ff70badd63429827e3d50f01701",
+                "passes": 1,
+                "fails": 0
+            },
+            "metrics API status is 200": {
+                "path": "::metrics API status is 200",
+                "id": "80c2316ffb0fa82b5fb0606844e5d3a0",
+                "passes": 0,
+                "fails": 6,
+                "name": "metrics API status is 200"
+            }
+        },
+        "name": "",
+        "path": ""
+    },
+    "metrics": {
+        "http_req_receiving": {
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0,
+            "min": 0
+        },
+        "http_req_duration": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "thresholds": {
+                "p(95)<500": false,
+                "p(99)<1000": false
+            }
+        },
+        "vus_max": {
+            "value": 505,
+            "min": 505,
+            "max": 505
+        },
+        "http_reqs": {
+            "count": 75,
+            "rate": 2.3399375074986453
+        },
+        "http_req_sending": {
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0
+        },
+        "http_req_tls_handshaking": {
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0,
+            "min": 0
+        },
+        "checks": {
+            "passes": 67,
+            "fails": 74,
+            "value": 0.475177304964539
+        },
+        "http_req_failed": {
+            "passes": 75,
+            "fails": 0,
+            "thresholds": {
+                "rate<0.01": true
+            },
+            "value": 1
+        },
+        "data_sent": {
+            "count": 0,
+            "rate": 0
+        },
+        "cache_hit_rate": {
+            "passes": 0,
+            "fails": 0,
+            "thresholds": {
+                "rate>0.8": false
+            },
+            "value": 0
+        },
+        "iterations": {
+            "count": 62,
+            "rate": 1.9343483395322136
+        },
+        "vus": {
+            "value": 5,
+            "min": 0,
+            "max": 5
+        },
+        "http_req_waiting": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_req_connecting": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "data_received": {
+            "rate": 0,
+            "count": 0
+        },
+        "iteration_duration": {
+            "avg": 2135.2865923064514,
+            "min": 1016.153333,
+            "med": 2248.8570634999996,
+            "max": 3000.717918,
+            "p(90)": 2793.2925808,
+            "p(95)": 2874.58729685
+        },
+        "cache_response_time": {
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0,
+            "thresholds": {
+                "p(95)<100": false
+            }
+        },
+        "http_req_blocked": {
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0,
+            "min": 0
+        }
+    },
+    "setup_data": {
+        "warmupCompleted": true
+    }
+}
