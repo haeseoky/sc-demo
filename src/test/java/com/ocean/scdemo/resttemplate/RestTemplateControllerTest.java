@@ -7,6 +7,7 @@ import java.util.Base64;
 import java.util.List;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,6 +31,7 @@ import reactor.core.publisher.Mono;
 
 @SpringBootTest
 @Slf4j
+@Disabled("외부 HTTP 호출이 필요한 테스트 - 임시 비활성화")
 public class RestTemplateControllerTest{
 
     @SneakyThrows

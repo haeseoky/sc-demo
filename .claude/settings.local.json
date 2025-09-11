@@ -3,7 +3,11 @@
     "allow": [
       "Bash(git push:*)",
       "Bash(mkdir:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(./gradlew:*)",
+      "Bash(find:*)",
+      "Bash(pkill:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

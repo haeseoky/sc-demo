@@ -70,6 +70,13 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    maxHeapSize = "2g"
+    jvmArgs = [
+        "-Xmx2g",
+        "-Xms512m",
+        "-XX:MaxMetaspaceSize=512m",
+        "-XX:+UseG1GC"
+    ]
 //    reports {
 //        junitXml.outputPerTestCase = true
 //    }
