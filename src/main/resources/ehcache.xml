@@ -2,133 +2,117 @@
 <config
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="http://www.ehcache.org/v3"
+    xmlns:jsr107="http://www.ehcache.org/v3/jsr107"
     xsi:schemaLocation="
         http://www.ehcache.org/v3
-        http://www.ehcache.org/schema/ehcache-core-3.0.xsd">
+        http://www.ehcache.org/schema/ehcache-core-3.0.xsd
+        http://www.ehcache.org/v3/jsr107
+        http://www.ehcache.org/schema/ehcache-107-ext-3.0.xsd">
 
-    <!-- EhCache 글로벌 설정 -->
+    <!-- EhCache 서비스 설정 -->
+    <service>
+        <jsr107:defaults enable-management="true" enable-statistics="true"/>
+    </service>
+
+    <!-- 영구 저장소 설정 -->
     <persistence directory="/tmp/ehcache-data"/>
-
-    <!-- 기본 리소스 풀 설정 -->
-    <resources>
-        <!-- 힙 메모리 풀 - 전체 캐시에서 최대 사용할 힙 메모리 -->
-        <heap unit="MB">128</heap>
-        <!-- 오프힙 메모리 풀 - 힙 외부 메모리 사용 -->
-        <offheap unit="MB">256</offheap>
-        <!-- 디스크 저장소 - 영구 저장을 위한 디스크 공간 -->
-        <disk unit="GB">1</disk>
-    </resources>
 
     <!-- 사용자 데이터 캐시 -->
     <cache alias="ehcache-users">
         <key-type>java.lang.String</key-type>
         <value-type>java.lang.Object</value-type>
-        
-        <!-- 리소스 배분 -->
-        <resources>
-            <heap unit="entries">1000</heap>      <!-- 힙에 1000개 엔트리 -->
-            <offheap unit="MB">32</offheap>       <!-- 오프힙에 32MB -->
-            <disk unit="MB">100</disk>            <!-- 디스크에 100MB -->
-        </resources>
-        
+
         <!-- TTL 설정 -->
         <expiry>
             <ttl unit="minutes">30</ttl>          <!-- 30분 후 만료 -->
         </expiry>
-        
-        <!-- 디스크 영구 저장 -->
-        <persistence strategy="localRestartSafe"/>
+
+        <!-- 리소스 배분 -->
+        <resources>
+            <heap unit="entries">1000</heap>      <!-- 힙에 1000개 엔트리 -->
+            <offheap unit="MB">32</offheap>       <!-- 오프힙에 32MB -->
+            <disk unit="MB" persistent="true">100</disk>            <!-- 디스크에 100MB -->
+        </resources>
     </cache>
 
     <!-- 상품 데이터 캐시 -->
     <cache alias="ehcache-products">
         <key-type>java.lang.String</key-type>
         <value-type>java.lang.Object</value-type>
-        
-        <resources>
-            <heap unit="entries">2000</heap>      <!-- 상품이 많으니 더 큰 힙 할당 -->
-            <offheap unit="MB">64</offheap>
-            <disk unit="MB">200</disk>
-        </resources>
-        
+
         <expiry>
             <ttl unit="hours">2</ttl>             <!-- 상품 정보는 2시간 유지 -->
         </expiry>
-        
-        <persistence strategy="localRestartSafe"/>
+
+        <resources>
+            <heap unit="entries">2000</heap>      <!-- 상품이 많으니 더 큰 힙 할당 -->
+            <offheap unit="MB">64</offheap>
+            <disk unit="MB" persistent="true">200</disk>
+        </resources>
     </cache>
 
     <!-- 핫 데이터 캐시 (자주 접근하는 데이터) -->
     <cache alias="ehcache-hotData">
         <key-type>java.lang.String</key-type>
         <value-type>java.lang.Object</value-type>
-        
-        <resources>
-            <heap unit="entries">500</heap>       <!-- 핫 데이터는 힙에 많이 보관 -->
-            <offheap unit="MB">16</offheap>
-            <disk unit="MB">50</disk>
-        </resources>
-        
+
         <expiry>
             <ttl unit="minutes">15</ttl>          <!-- 짧은 TTL로 신선도 유지 -->
         </expiry>
-        
-        <persistence strategy="localRestartSafe"/>
+
+        <resources>
+            <heap unit="entries">500</heap>       <!-- 핫 데이터는 힙에 많이 보관 -->
+            <offheap unit="MB">16</offheap>
+            <disk unit="MB" persistent="true">50</disk>
+        </resources>
     </cache>
 
     <!-- 세션 데이터 캐시 -->
     <cache alias="ehcache-sessions">
         <key-type>java.lang.String</key-type>
         <value-type>java.lang.Object</value-type>
-        
+
+        <expiry>
+            <ttl unit="hours">1</ttl>             <!-- 세션 타임아웃 1시간 -->
+        </expiry>
+
         <resources>
             <heap unit="entries">5000</heap>      <!-- 많은 세션을 힙에 보관 -->
             <offheap unit="MB">32</offheap>
             <!-- 세션 데이터는 디스크에 저장하지 않음 (보안상 이유) -->
         </resources>
-        
-        <expiry>
-            <ttl unit="hours">1</ttl>             <!-- 세션 타임아웃 1시간 -->
-        </expiry>
-        
-        <!-- 세션 데이터는 영구 저장하지 않음 -->
-        <persistence strategy="none"/>
     </cache>
 
     <!-- 설정 데이터 캐시 (거의 변경되지 않는 데이터) -->
     <cache alias="ehcache-config">
         <key-type>java.lang.String</key-type>
         <value-type>java.lang.Object</value-type>
-        
-        <resources>
-            <heap unit="entries">100</heap>       <!-- 설정 데이터는 적으므로 작은 힙 -->
-            <offheap unit="MB">8</offheap>
-            <disk unit="MB">20</disk>
-        </resources>
-        
+
         <expiry>
             <ttl unit="hours">24</ttl>            <!-- 하루 동안 유지 -->
         </expiry>
-        
-        <persistence strategy="localRestartSafe"/>
+
+        <resources>
+            <heap unit="entries">100</heap>       <!-- 설정 데이터는 적으므로 작은 힙 -->
+            <offheap unit="MB">8</offheap>
+            <disk unit="MB" persistent="true">20</disk>
+        </resources>
     </cache>
 
     <!-- 통계 및 메트릭스 캐시 -->
     <cache alias="ehcache-metrics">
         <key-type>java.lang.String</key-type>
         <value-type>java.lang.Object</value-type>
-        
-        <resources>
-            <heap unit="entries">1000</heap>
-            <offheap unit="MB">16</offheap>
-            <disk unit="MB">50</disk>
-        </resources>
-        
+
         <expiry>
             <ttl unit="minutes">5</ttl>           <!-- 메트릭스는 빠른 갱신 필요 -->
         </expiry>
-        
-        <persistence strategy="localRestartSafe"/>
+
+        <resources>
+            <heap unit="entries">1000</heap>
+            <offheap unit="MB">16</offheap>
+            <disk unit="MB" persistent="true">50</disk>
+        </resources>
     </cache>
 
 </config>

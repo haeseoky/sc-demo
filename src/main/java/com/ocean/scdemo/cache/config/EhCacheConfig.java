@@ -34,9 +34,10 @@ public class EhCacheConfig {
 
     /**
      * EhCache 캐시 매니저 - XML 기반 설정
+     * 임시로 비활성화 - 락 문제 해결 후 활성화 예정
      */
-    @Bean("ehCacheManager")
-    public CacheManager ehCacheManager() {
+    // @Bean("ehCacheManager")
+    public CacheManager ehCacheManager_disabled() {
         try {
             // XML 설정 파일을 사용한 EhCache 매니저 생성
             ClassPathResource configLocation = new ClassPathResource("ehcache.xml");
@@ -63,21 +64,19 @@ public class EhCacheConfig {
     }
 
     /**
-     * 프로그래밍 방식 EhCache 매니저 (백업용)
+     * 프로그래밍 방식 EhCache 매니저 (백업용 - 힙 메모리만 사용)
      */
     @Bean("ehCacheManagerProgrammatic")
     public CacheManager ehCacheManagerProgrammatic() {
         try {
-            // 프로그래밍 방식으로 EhCache 설정
+            // 프로그래밍 방식으로 EhCache 설정 (힙 메모리만 사용)
             org.ehcache.CacheManager ehCacheManager = CacheManagerBuilder.newCacheManagerBuilder()
                 // 사용자 캐시 설정
                 .withCache("ehcache-users-prog",
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(
                         String.class, Object.class,
                         ResourcePoolsBuilder.newResourcePoolsBuilder()
-                            .heap(1000, EntryUnit.ENTRIES)      // 힙에 1000개 엔트리
-                            .offheap(32, MemoryUnit.MB)         // 오프힙 32MB
-                            .disk(100, MemoryUnit.MB, true)     // 디스크 100MB, 영구저장
+                            .heap(5000, EntryUnit.ENTRIES)      // 힙에 5000개 엔트리
                     ).withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(30)))
                 )
                 // 상품 캐시 설정
@@ -85,9 +84,7 @@ public class EhCacheConfig {
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(
                         String.class, Object.class,
                         ResourcePoolsBuilder.newResourcePoolsBuilder()
-                            .heap(2000, EntryUnit.ENTRIES)
-                            .offheap(64, MemoryUnit.MB)
-                            .disk(200, MemoryUnit.MB, true)
+                            .heap(10000, EntryUnit.ENTRIES)     // 힙에 10000개 엔트리
                     ).withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofHours(2)))
                 )
                 // 핫 데이터 캐시 설정
@@ -95,23 +92,22 @@ public class EhCacheConfig {
                     CacheConfigurationBuilder.newCacheConfigurationBuilder(
                         String.class, Object.class,
                         ResourcePoolsBuilder.newResourcePoolsBuilder()
-                            .heap(500, EntryUnit.ENTRIES)
-                            .offheap(16, MemoryUnit.MB)
-                            .disk(50, MemoryUnit.MB, true)
+                            .heap(2000, EntryUnit.ENTRIES)      // 힙에 2000개 엔트리
                     ).withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(15)))
                 )
                 .build();
-            
+
             ehCacheManager.init();
-            
+
             // Spring의 JCacheCacheManager로 래핑
             javax.cache.CacheManager jcacheManager = Caching.getCachingProvider().getCacheManager();
             JCacheCacheManager springCacheManager = new JCacheCacheManager(jcacheManager);
-            
-            log.info("✅ EhCache 프로그래밍 매니저 초기화 완료");
-            
+
+            log.info("✅ EhCache 프로그래밍 매니저 초기화 완료 (Heap Memory Only)");
+            log.info("💾 지원 캐시: ehcache-users-prog, ehcache-products-prog, ehcache-hotData-prog");
+
             return springCacheManager;
-            
+
         } catch (Exception e) {
             log.error("❌ EhCache 프로그래밍 설정 초기화 실패", e);
             throw new RuntimeException("EhCache 프로그래밍 설정 오류", e);

@@ -64,10 +64,14 @@ dependencies {
     // Caffeine Cache (로컬 캐시)
     implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
     implementation 'org.springframework.boot:spring-boot-starter-cache'
-    
+
     // EhCache (디스크 기반 캐시)
-    implementation 'net.sf.ehcache:ehcache:2.10.9.2'
     implementation 'org.ehcache:ehcache:3.10.8'
+    implementation 'javax.cache:cache-api:1.1.1'
+
+    // JAXB API (Java 11+ 필요)
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
+    implementation 'org.glassfish.jaxb:jaxb-runtime:2.3.9'
 
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 }

@@ -53,7 +53,7 @@ public class DualCacheConfig {
     @ConditionalOnProperty(name = "cache.provider", havingValue = "ehcache")
     public CacheManager ehCacheCacheManager() {
         log.info("💾 기본 캐시 제공자: EhCache (대용량 디스크 기반)");
-        return ehCacheConfig.ehCacheManager();
+        return ehCacheConfig.ehCacheManagerProgrammatic();
     }
 
     /**
