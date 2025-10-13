@@ -9,7 +9,9 @@
       "Bash(pkill:*)",
       "Bash(curl:*)",
       "Bash(git commit:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)"
     ],
     "deny": [],
     "ask": []

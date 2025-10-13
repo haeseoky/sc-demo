@@ -10,4 +10,7 @@ import org.springframework.stereotype.Service;
 public class RedisService {
 
 
+    public void settingData(){
+
+    }
 }

@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Configuration
-@EnableCaching
 public class MultiLevelCacheConfig {
 
     /**
@@ -90,9 +89,9 @@ public class MultiLevelCacheConfig {
     }
 
     /**
-     * 기본 캐시 매니저 - 멀티레벨 캐시 매니저 사용
+     * 멀티레벨 캐시 매니저 - Caffeine + Redis 조합
+     * DualCacheConfig에서 @Primary 관리
      */
-    @Primary
     @Bean("multiLevelCacheManager")
     public CacheManager multiLevelCacheManager(RedisConnectionFactory redisConnectionFactory) {
         return new MultiLevelCacheManager(

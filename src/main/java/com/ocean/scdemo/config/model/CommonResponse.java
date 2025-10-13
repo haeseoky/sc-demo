@@ -10,4 +10,8 @@ public class CommonResponse<T> {
     public CommonResponse(T body) {
         this.payload = body;
     }
+    
+    public static <T> CommonResponse<T> success(T payload) {
+        return new CommonResponse<>(payload);
+    }
 }
