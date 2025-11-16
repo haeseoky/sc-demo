@@ -12,12 +12,18 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
+import java.lang.reflect.Method;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * 중복 실행 방지 AOP Aspect
+ * <p>
+ * 성능 최적화:
+ * - 필드 접근자 캐싱 (ConcurrentHashMap)
+ * - String 타입만 지원 (리플렉션 부하 최소화)
+ * - StringBuilder 기반 문자열 연결
+ * - Early return 패턴 적용
  *
  * @PreventDuplicateExecution 어노테이션이 적용된 메소드의 중복 실행을 Redis를 통해 방지합니다.
  */
@@ -29,11 +35,16 @@ public class DuplicateExecutionPreventAspect {
 
     private static final String LOCK_KEY_PREFIX = "execution:lock:";
     private static final String LOCK_VALUE = "LOCKED";
+    private static final String KEY_SEPARATOR = ":";
+    private static final String NULL_VALUE = "null";
+
+    // 필드 접근자 캐시 (클래스명:필드명 -> 접근자)
+    private static final ConcurrentHashMap<String, FieldAccessor> FIELD_ACCESSOR_CACHE = new ConcurrentHashMap<>(128);
 
     private final RedisTemplate<String, Object> redisTemplate;
 
     /**
-     * @PreventDuplicateExecution 어노테이션이 적용된 메소드를 가로채서 중복 실행 방지 로직을 적용합니다.
+     * 중복 실행 방지 로직을 적용합니다.
      *
      * @param joinPoint AOP 조인 포인트
      * @param annotation PreventDuplicateExecution 어노테이션
@@ -46,150 +57,217 @@ public class DuplicateExecutionPreventAspect {
             PreventDuplicateExecution annotation
     ) throws Throwable {
 
-        // 1. Redis 락 키 생성
-        String lockKey = generateLockKey(joinPoint, annotation);
+        final String lockKey = generateLockKey(joinPoint, annotation);
 
-        log.debug("Checking duplicate execution for lockKey: {}", lockKey);
+        if (log.isDebugEnabled()) {
+            log.debug("Checking duplicate execution for lockKey: {}", lockKey);
+        }
 
-        // 2. Redis에 키가 이미 존재하는지 확인 (중복 실행 체크)
-        Boolean isLocked = redisTemplate.opsForValue().setIfAbsent(
-                lockKey,
-                LOCK_VALUE,
-                annotation.ttl(),
-                TimeUnit.SECONDS
-        );
-
-        // 3. 이미 실행 중이면 예외 발생
-        if (Boolean.FALSE.equals(isLocked)) {
+        if (!acquireLock(lockKey, annotation.ttl())) {
             log.warn("Duplicate execution detected for lockKey: {}", lockKey);
             throw new DuplicateExecutionException(annotation.message(), lockKey);
         }
 
         try {
-            // 4. 메소드 실행
-            log.debug("Executing method with lockKey: {}", lockKey);
+            if (log.isDebugEnabled()) {
+                log.debug("Executing method with lockKey: {}", lockKey);
+            }
             return joinPoint.proceed();
-
         } finally {
-            // 5. 메소드 실행 완료 후 락 해제
-            redisTemplate.delete(lockKey);
+            releaseLock(lockKey);
+        }
+    }
+
+    /**
+     * Redis 락을 획득합니다.
+     *
+     * @param lockKey 락 키
+     * @param ttl TTL (초)
+     * @return 락 획득 성공 여부
+     */
+    private boolean acquireLock(String lockKey, long ttl) {
+        Boolean acquired = redisTemplate.opsForValue().setIfAbsent(
+                lockKey,
+                LOCK_VALUE,
+                ttl,
+                TimeUnit.SECONDS
+        );
+        return Boolean.TRUE.equals(acquired);
+    }
+
+    /**
+     * Redis 락을 해제합니다.
+     *
+     * @param lockKey 락 키
+     */
+    private void releaseLock(String lockKey) {
+        redisTemplate.delete(lockKey);
+        if (log.isDebugEnabled()) {
             log.debug("Released lock for lockKey: {}", lockKey);
         }
     }
 
     /**
-     * 메소드 시그니처와 파라미터를 기반으로 Redis 락 키를 생성합니다.
+     * Redis 락 키를 생성합니다.
+     * <p>
+     * 성능 최적화: StringBuilder 사용, Early return
      *
      * @param joinPoint AOP 조인 포인트
      * @param annotation PreventDuplicateExecution 어노테이션
      * @return 생성된 락 키
      */
     private String generateLockKey(ProceedingJoinPoint joinPoint, PreventDuplicateExecution annotation) {
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        String className = signature.getDeclaringType().getSimpleName();
-        String methodName = signature.getMethod().getName();
+        final MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        final String className = signature.getDeclaringType().getSimpleName();
+        final String methodName = signature.getMethod().getName();
 
-        // 메소드명만 사용하는 경우
+        final StringBuilder keyBuilder = new StringBuilder(128)
+                .append(LOCK_KEY_PREFIX)
+                .append(className)
+                .append(KEY_SEPARATOR)
+                .append(methodName);
+
         if (annotation.useMethodName()) {
-            return LOCK_KEY_PREFIX + className + ":" + methodName;
+            return keyBuilder.toString();
         }
 
-        // 파라미터에서 키 값 추출
-        String[] keys = annotation.keys();
-        Object[] args = joinPoint.getArgs();
+        final String[] keys = annotation.keys();
+        final Object[] args = joinPoint.getArgs();
+        final Object param = args[0];
+        appendKeyValues(keyBuilder, param, keys);
 
-        if (keys.length == 0) {
-            throw new IllegalArgumentException(
-                    "PreventDuplicateExecution annotation must have at least one key or useMethodName=true"
-            );
-        }
-
-        if (args.length == 0) {
-            throw new IllegalArgumentException(
-                    "Method " + methodName + " has no parameters to extract keys from"
-            );
-        }
-
-        // 첫 번째 파라미터에서 키 값들 추출
-        Object param = args[0];
-        String keyValues = extractKeyValues(param, keys);
-
-        return LOCK_KEY_PREFIX + className + ":" + methodName + ":" + keyValues;
+        return keyBuilder.toString();
     }
 
     /**
-     * 파라미터 객체에서 지정된 필드명들의 값을 추출하여 조합합니다.
+     * 파라미터 객체에서 필드값들을 추출하여 키 빌더에 추가합니다.
+     * <p>
+     * 성능 최적화: Stream 제거, StringBuilder 직접 사용
      *
+     * @param keyBuilder 키 빌더
      * @param param 파라미터 객체
-     * @param fieldNames 추출할 필드명 배열
-     * @return 필드값들을 조합한 문자열
+     * @param fieldNames 필드명 배열
      */
-    private String extractKeyValues(Object param, String[] fieldNames) {
-        return Arrays.stream(fieldNames)
-                .map(fieldName -> extractFieldValue(param, fieldName))
-                .collect(Collectors.joining(":"));
+    private void appendKeyValues(StringBuilder keyBuilder, Object param, String[] fieldNames) {
+        for (String fieldName : fieldNames) {
+            keyBuilder.append(KEY_SEPARATOR);
+            String fieldValue = extractFieldValue(param, fieldName);
+            keyBuilder.append(fieldValue);
+        }
     }
 
     /**
-     * 파라미터 객체에서 특정 필드의 값을 추출합니다.
-     * getter 메소드 또는 리플렉션을 사용하여 값을 가져옵니다.
+     * 파라미터 객체에서 String 타입 필드의 값을 추출합니다.
+     * <p>
+     * 성능 최적화:
+     * - 필드 접근자 캐싱
+     * - String 타입만 지원 (타입 검증)
+     * - 계층 구조 탐색 제거 (단일 계층만)
+     * - 중첩 try-catch 제거
      *
      * @param param 파라미터 객체
      * @param fieldName 필드명
-     * @return 필드 값 문자열
+     * @return 필드 값 (null인 경우 "null" 문자열)
      */
     private String extractFieldValue(Object param, String fieldName) {
+        final Class<?> paramClass = param.getClass();
+        final String cacheKey = buildCacheKey(paramClass, fieldName);
+
+        // 캐시에서 접근자 조회 (없으면 생성)
+        final FieldAccessor accessor = FIELD_ACCESSOR_CACHE.computeIfAbsent(
+                cacheKey,
+                key -> createFieldAccessor(paramClass, fieldName)
+        );
+
+        return accessor.getValue(param);
+    }
+
+    /**
+     * 캐시 키를 생성합니다.
+     *
+     * @param paramClass 파라미터 클래스
+     * @param fieldName 필드명
+     * @return 캐시 키
+     */
+    private String buildCacheKey(Class<?> paramClass, String fieldName) {
+        return paramClass.getName() + KEY_SEPARATOR + fieldName;
+    }
+
+    /**
+     * 필드 접근자를 생성합니다.
+     * <p>
+     * 우선순위: getter 메소드 > 직접 필드 접근
+     *
+     * @param paramClass 파라미터 클래스
+     * @param fieldName 필드명
+     * @return 필드 접근자
+     */
+    private FieldAccessor createFieldAccessor(Class<?> paramClass, String fieldName) {
+        // 1. getter 메소드 시도
+        Method getter = findGetter(paramClass, fieldName);
+        if (getter != null) {
+            validateStringType(getter.getReturnType(), fieldName, paramClass);
+            return new MethodAccessor(getter);
+        }
+
+        // 2. 직접 필드 접근 시도 (단일 계층만)
+        Field field = findField(paramClass, fieldName);
+        if (field != null) {
+            validateStringType(field.getType(), fieldName, paramClass);
+            field.setAccessible(true);
+            return new DirectFieldAccessor(field);
+        }
+
+        throw new IllegalArgumentException(
+                "Field '" + fieldName + "' not found in " + paramClass.getSimpleName()
+        );
+    }
+
+    /**
+     * getter 메소드를 찾습니다.
+     *
+     * @param paramClass 파라미터 클래스
+     * @param fieldName 필드명
+     * @return getter 메소드 또는 null
+     */
+    private Method findGetter(Class<?> paramClass, String fieldName) {
+        final String getterName = "get" + capitalize(fieldName);
         try {
-            // 1. getter 메소드 시도 (getFieldName 또는 isFieldName)
-            try {
-                String getterName = "get" + capitalize(fieldName);
-                Object value = param.getClass().getMethod(getterName).invoke(param);
-                return value != null ? value.toString() : "null";
-            } catch (NoSuchMethodException e) {
-                // getter가 없으면 boolean 타입의 isXxx 시도
-                try {
-                    String isGetterName = "is" + capitalize(fieldName);
-                    Object value = param.getClass().getMethod(isGetterName).invoke(param);
-                    return value != null ? value.toString() : "null";
-                } catch (NoSuchMethodException ex) {
-                    // getter도 없으면 필드에 직접 접근
-                    Field field = findField(param.getClass(), fieldName);
-                    if (field != null) {
-                        field.setAccessible(true);
-                        Object value = field.get(param);
-                        return value != null ? value.toString() : "null";
-                    }
-                    throw new IllegalArgumentException(
-                            "Field '" + fieldName + "' not found in " + param.getClass().getSimpleName()
-                    );
-                }
-            }
-        } catch (Exception e) {
-            log.error("Failed to extract field value: {}", fieldName, e);
-            throw new IllegalArgumentException(
-                    "Failed to extract field '" + fieldName + "' from " + param.getClass().getSimpleName(),
-                    e
-            );
+            return paramClass.getMethod(getterName);
+        } catch (NoSuchMethodException e) {
+            return null;
         }
     }
 
     /**
-     * 클래스 계층 구조를 따라 올라가면서 필드를 찾습니다.
+     * 필드를 찾습니다 (단일 계층만).
      *
-     * @param clazz 클래스
+     * @param paramClass 파라미터 클래스
      * @param fieldName 필드명
-     * @return 찾은 필드 또는 null
+     * @return 필드 또는 null
      */
-    private Field findField(Class<?> clazz, String fieldName) {
-        Class<?> current = clazz;
-        while (current != null) {
-            try {
-                return current.getDeclaredField(fieldName);
-            } catch (NoSuchFieldException e) {
-                current = current.getSuperclass();
-            }
+    private Field findField(Class<?> paramClass, String fieldName) {
+        try {
+            return paramClass.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException e) {
+            return null;
         }
-        return null;
+    }
+
+    /**
+     * String 타입인지 검증합니다.
+     *
+     * @param type 타입
+     * @param fieldName 필드명
+     * @param paramClass 파라미터 클래스
+     */
+    private void validateStringType(Class<?> type, String fieldName, Class<?> paramClass) {
+        if (!String.class.equals(type)) {
+            throw new IllegalArgumentException(
+                    "Field '" + fieldName + "' in " + paramClass.getSimpleName() +
+                    " must be of type String, but was " + type.getSimpleName()
+            );
+        }
     }
 
     /**
@@ -202,6 +280,65 @@ public class DuplicateExecutionPreventAspect {
         if (str == null || str.isEmpty()) {
             return str;
         }
-        return str.substring(0, 1).toUpperCase() + str.substring(1);
+        char firstChar = str.charAt(0);
+        if (Character.isUpperCase(firstChar)) {
+            return str;
+        }
+        return Character.toUpperCase(firstChar) + str.substring(1);
+    }
+
+    /**
+     * 필드 접근자 인터페이스
+     */
+    private interface FieldAccessor {
+        String getValue(Object target);
+    }
+
+    /**
+     * getter 메소드 기반 접근자
+     */
+    private static class MethodAccessor implements FieldAccessor {
+        private final Method method;
+
+        MethodAccessor(Method method) {
+            this.method = method;
+        }
+
+        @Override
+        public String getValue(Object target) {
+            try {
+                Object value = method.invoke(target);
+                return value != null ? (String) value : NULL_VALUE;
+            } catch (Exception e) {
+                throw new IllegalStateException(
+                        "Failed to invoke getter: " + method.getName(),
+                        e
+                );
+            }
+        }
+    }
+
+    /**
+     * 직접 필드 접근자
+     */
+    private static class DirectFieldAccessor implements FieldAccessor {
+        private final Field field;
+
+        DirectFieldAccessor(Field field) {
+            this.field = field;
+        }
+
+        @Override
+        public String getValue(Object target) {
+            try {
+                Object value = field.get(target);
+                return value != null ? (String) value : NULL_VALUE;
+            } catch (IllegalAccessException e) {
+                throw new IllegalStateException(
+                        "Failed to access field: " + field.getName(),
+                        e
+                );
+            }
+        }
     }
 }

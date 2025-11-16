@@ -14,6 +14,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -178,7 +179,7 @@ class DuplicateExecutionPreventionTest {
 
     @Test
     @DisplayName("여러 키를 조합하여 락이 생성되어야 한다")
-    void shouldCreateLockWithMultipleKeys() {
+    void shouldCreateLockWithMultipleKeys() throws InterruptedException {
         // given
         OrderRequest request = OrderRequest.builder()
                 .userId("user3")
@@ -188,18 +189,25 @@ class DuplicateExecutionPreventionTest {
                 .amount(10000.0)
                 .build();
 
-        // when
-        orderService.cancelOrder(request); // userId, orderId, productId 조합
+        // when - 비동기로 첫 번째 요청 실행
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> orderService.cancelOrder(request));
 
-        // then
+        // 첫 번째 요청이 시작될 때까지 대기
+        Thread.sleep(100);
+
+        // then - 두 번째 요청은 중복으로 차단되어야 함
         assertThatThrownBy(() -> orderService.cancelOrder(request))
                 .isInstanceOf(DuplicateExecutionException.class)
                 .hasMessageContaining("동일한 주문 취소 요청이 이미 처리 중입니다");
+
+        executor.shutdown();
+        executor.awaitTermination(5, TimeUnit.SECONDS);
     }
 
     @Test
     @DisplayName("null 값이 포함된 파라미터도 처리할 수 있어야 한다")
-    void shouldHandleNullValues() {
+    void shouldHandleNullValues() throws InterruptedException {
         // given
         OrderRequest request = OrderRequest.builder()
                 .userId("user4")
@@ -209,12 +217,18 @@ class DuplicateExecutionPreventionTest {
                 .amount(10000.0)
                 .build();
 
-        // when & then
-        String result = orderService.cancelOrder(request);
-        assertThat(result).isNotNull();
+        // when - 비동기로 첫 번째 요청 실행
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> orderService.cancelOrder(request));
 
-        // 중복 실행 시도
+        // 첫 번째 요청이 시작될 때까지 대기
+        Thread.sleep(100);
+
+        // then - 중복 실행 시도는 차단되어야 함
         assertThatThrownBy(() -> orderService.cancelOrder(request))
                 .isInstanceOf(DuplicateExecutionException.class);
+
+        executor.shutdown();
+        executor.awaitTermination(5, TimeUnit.SECONDS);
     }
 }
